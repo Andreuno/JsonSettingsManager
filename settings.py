@@ -3,29 +3,24 @@ import json
 # =========================================================== CLASSES
 
 class Settings():
+    """ Auto convert json config file to class attributes.
+    Auto-update json config file from class attributes."""
+
+    path_config = "config.json"
+
     def __init__(self):
-        self.file = 'config.json'
-        with open(self.file) as json_file:
-            self.data = json.load(json_file)
+        with open(self.path_config) as json_file:
+            self.__dict__.update(json.load(json_file))
 
-    def __getattr__(self, name):
-        if name in self.data:
-            if name in self.__dict__:
-                return self.__dict__[name]
-            else:
-                self.__dict__[name] = self.data[name]
-                return self.__dict__[name]
-        else:
-            raise AttributeError(f'Settings() has not atribute "{name}."')
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+        self.save()
 
-    def _data(self, name, value):
-        self.data[name] = value
+    def __delattr__(self, name):
+        del self.__dict__[name]
         self.save()
 
     def save(self):
-        with open(self.file, "w") as f:
-            json.dump(self.data, f, sort_keys=True, indent=4)
-
-
-
-# =========================================================== MAIN
+        # Saving all class attributes in json config file
+        with open(self.path_config, "w") as f:
+            json.dump(self.__dict__, f, sort_keys=True, indent=4)
